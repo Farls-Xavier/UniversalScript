@@ -204,10 +204,10 @@ local function GetClosestPlayer()
                     if v.Character ~= nil then
                         if v.Character:FindFirstChild("HumanoidRootPart") ~= nil then
                             if v.Character:FindFirstChild("Humanoid") ~= nil and v.Character:FindFirstChild("Humanoid").Health ~= 0 then
-                                local ScreenPoint = Camera:WorldToScreenPoint(v.Character:WaitForChild("HumanoidRootPart", math.huge).Position)
+                                local ScreenPoint, OnScreen = Camera:WorldToViewportPoint(v.Character:WaitForChild("HumanoidRootPart", math.huge).Position)
                                 local VectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(ScreenPoint.X, ScreenPoint.Y)).Magnitude
                                 
-                                if VectorDistance < MaxDistance then
+                                if VectorDistance < MaxDistance and OnScreen == true then
                                     Target = v
                                 end
                             end
