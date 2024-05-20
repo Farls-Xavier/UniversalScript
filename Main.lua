@@ -1,39 +1,40 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Farls-Xavier/UiLibrary/main/Library.lua"))()
 
 local Player = game.Players.LocalPlayer
+local Char = Player.Character or Player.CharacterAdded:Wait()
 local Mouse = Player:GetMouse()
 
 local Camera = workspace.CurrentCamera
 local RunService = game:GetService("RunService")
 
 --[[ ESP SETTINGS ]]--
-_G.EspSettings = {
+local EspSettings = {
     TeamCheck = false
 }
 
-_G.TracerSettings = {
+local TracerSettings = {
     Visible = false,
     Color = Color3.fromRGB(76, 77, 146)
 }
 
-_G.BoxSettings = {
+local BoxSettings = {
     Visible = false,
     Color = Color3.fromRGB(76, 77, 146)
 }
 
-_G.NameSettings = {
+local NameSettings = {
     Visible = false,
     Color = Color3.fromRGB(76, 77, 146)
 }
 
 --[[ AIMBOT SETTINGS ]] --
-_G.AimbotSettings = {
+local AimbotSettings = {
     Enabled = false,
     Aimpart = "Head",
     Smoothness = 0
 }
 
-_G.FovSettings = {
+local FovSettings = {
     Visible = false,
     Size = 90
 }
@@ -60,7 +61,7 @@ local AimTab = {
     ["Aimbot Toggle"] = Tabs.Aim:Toggle({
         Text = "Aimbot",
         Callback = function(v)
-            _G.AimbotSettings.Enabled = v
+            AimbotSettings.Enabled = v
         end
     }),
 
@@ -70,14 +71,14 @@ local AimTab = {
         Max = 10,
         Default = 0,
         Callback = function(v)
-            _G.AimbotSettings.Smoothness = v
+            AimbotSettings.Smoothness = v
         end
     }),
 
     ["Fov Toggle"] = Tabs.Aim:Toggle({
         Text = "FOV",
         Callback = function(v)
-            _G.FovSettings.Visible = v
+            FovSettings.Visible = v
         end
     }),
 
@@ -87,7 +88,7 @@ local AimTab = {
         Max = 999,
         Default = 90,
         Callback = function(v)
-            _G.FovSettings.Size = v
+            FovSettings.Size = v
         end
     })
 }
@@ -96,21 +97,21 @@ local VisualsTab = {
     ["Boxes Toggle"] = Tabs.Visuals:Toggle({
         Text = "Boxes",
         Callback = function(v)
-            _G.BoxSettings.Visible = v
+            BoxSettings.Visible = v
         end
     }),
 
     ["Names Toggle"] = Tabs.Visuals:Toggle({
         Text = "Names",
         Callback = function(v)
-            _G.NameSettings.Visible = v
+            NameSettings.Visible = v
         end
     }),
 
     ["Tracers Toggle"] = Tabs.Visuals:Toggle({
         Text = "Tracers",
         Callback = function(v)
-            _G.TracerSettings.Visible = v
+            TracerSettings.Visible = v
         end
     })
 }
@@ -120,9 +121,9 @@ local PlayerTab = {
         Text = "WalkSpeed",
         Min = 0,
         Max = 500,
-        Default = game.Players.LocalPlayer.Character.Humanoid.WalkSpeed,
+        Default = Char.Humanoid.WalkSpeed,
         Callback = function(v)
-            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = v
+            Char.Humanoid.WalkSpeed = v
         end
     }),
     
@@ -130,11 +131,11 @@ local PlayerTab = {
         Text = "JumpPower",
         Min = 0,
         Max = 500,
-        Default = game.Players.LocalPlayer.Character.Humanoid.JumpPower or game.Players.LocalPlayer.Character.Humanoid.JumpHeight,
+        Default = Char.Humanoid.JumpPower or Char.Humanoid.JumpHeight,
         Callback = function(v)
-            game.Players.LocalPlayer.Character.Humanoid.JumpPower = v
+            Char.Humanoid.JumpPower = v
             pcall(function()
-                game.Players.LocalPlayer.Character.Humanoid.JumpHeight = v
+                Char.Humanoid.JumpHeight = v
             end)
         end
     })
@@ -143,8 +144,8 @@ local PlayerTab = {
 local function AddBoxes(player)
     local Box = Drawing.new("Square")
     Box.Visible = false
-    Box.Color = _G.BoxSettings.Color
-    Box.Thickness = 1
+    Box.Color = BoxSettings.Color
+    Box.Thickness = 2
     Box.Filled = false
 
     local HeadOffset = Vector3.new(0, 0.5, 0)
@@ -157,18 +158,18 @@ local function AddBoxes(player)
             local HeadPos = Camera:WorldToViewportPoint(player.Character.Head.Position + HeadOffset)
             local LegPos = Camera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position - LegOffset)
 
-            Box.Position = Vector2.new(Vector.X, Vector.Y)
-            Box.Size = Vector2.new(1000 / Vector.Z, HeadPos.Y - LegPos.Y)
+            Box.Size = Vector2.new(1500 / Vector.Z, HeadPos.Y - LegPos.Y)
+            Box.Position = Vector2.new(Vector.X - Box.Size.X / 2, Vector.Y - Box.Size.Y / 2)
 
             if OnScreen == true then
-                if _G.EspSettings.TeamCheck == true then
+                if EspSettings.TeamCheck == true then
                     if player.Team ~= Player.Team then
-                        Box.Visible = _G.BoxSettings.Visible
+                        Box.Visible = BoxSettings.Visible
                     else
                         Box.Visible = false
                     end
                 else
-                    Box.Visible = _G.BoxSettings.Visible
+                    Box.Visible = BoxSettings.Visible
                 end
             else
                 Box.Visible = false
