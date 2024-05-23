@@ -303,6 +303,8 @@ coroutine.wrap(function()
 end)()
 
 local function AddBoxes(player)
+    local CurrentStep
+
     local Box = Drawing.new("Square")
     Box.Visible = false
     Box.Color = BoxSettings.Color
@@ -312,7 +314,7 @@ local function AddBoxes(player)
     local HeadOffset = Vector3.new(0, 0.5, 0)
     local LegOffset = Vector3.new(0, 3, 0)
 
-    RunService.RenderStepped:Connect(function()
+    CurrentStep = RunService.RenderStepped:Connect(function()
         if player.Character ~= nil and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Head") ~= nil and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
             local Vector, OnScreen = Camera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
 
@@ -342,19 +344,23 @@ local function AddBoxes(player)
 
     game.Players.PlayerRemoving:Connect(function(plr)
         if plr == player then
+            CurrentStep:Disconnect()
+            CurrentStep = nil
             Box:Remove()
         end
     end)
 end
 
 local function AddTracer(player)
+    local CurrentStep
+
     local Tracer = Drawing.new("Line")
     Tracer.Visible = false
     Tracer.Color = TracerSettings.Color
     Tracer.Thickness = 1
     Tracer.Transparency = 1
 
-    RunService.RenderStepped:Connect(function()
+    CurrentStep = RunService.RenderStepped:Connect(function()
         if player.Character ~= nil and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
             local Vector, OnScreen = Camera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
 
@@ -387,12 +393,16 @@ local function AddTracer(player)
 
     game.Players.PlayerRemoving:Connect(function(plr)
         if plr == player then
+            CurrentStep:Disconnect()
+            CurrentStep = nil
             Tracer:Remove()
         end
     end)
 end
 
 local function AddName(player)
+    local CurrentStep
+
     local Text = Drawing.new("Text")
     Text.Transparency = 1
     Text.Size = 14
@@ -402,7 +412,7 @@ local function AddName(player)
     Text.OutlineColor = Color3.fromRGB(0,0,0)
     Text.Text = player.DisplayName
 
-    RunService.RenderStepped:Connect(function()
+    CurrentStep = RunService.RenderStepped:Connect(function()
         if player.Character ~= nil and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
             local Vector, OnScreen = Camera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
 
@@ -428,6 +438,8 @@ local function AddName(player)
 
     game.Players.PlayerRemoving:Connect(function(plr)
         if plr == player then
+            CurrentStep:Disconnect()
+            CurrentStep = nil
             Text:Remove()
         end
     end)
@@ -442,9 +454,7 @@ for i,v in pairs(game.Players:GetPlayers()) do
 end
 
 game.Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function()
-        AddBoxes(player)
-        AddTracer(player)
-        AddName(player)
-    end)
+    AddBoxes(player)
+    AddTracer(player)
+    AddName(player)
 end)
