@@ -1,5 +1,7 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Farls-Xavier/UiLibrary/main/Library.lua"))()
 
+local Target = nil
+
 local Player = game.Players.LocalPlayer
 local Char = Player.Character or Player.CharacterAdded:Wait()
 local Mouse = Player:GetMouse()
@@ -36,13 +38,15 @@ local Holding = false
 
 local AimbotSettings = {
     Enabled = false,
+    WallCheck = false,
     TeamCheck = false,
-    Aimpart = "Head",
+    Aimpart = "Head", -- Torso, Closest, Head
     Smoothness = 0
 }
 
 local FovSettings = {
     Visible = false,
+    Enabled = false,
     Color = Color3.fromRGB(126, 161, 255),
     Size = 90
 }
@@ -62,6 +66,11 @@ local Tabs = {
     ["Player"] = Window:Tab({
         Text = "Player",
         Icon = "rbxassetid://14958157475"
+    }),
+
+    ["Config"] = Window:Tab({
+        Text = "Config",
+        Icon = "rbxassetid://13850085640"
     })
 }
 
@@ -72,6 +81,13 @@ local AimTab = {
             AimbotSettings.Enabled = v
         end
     }),
+
+    --[[ ["Wall Check Toggle"] = Tabs.Aim:Toggle({
+        Text = "WallCheck",
+        Callback = function(v)
+            AimbotSettings.WallCheck = v
+        end
+    }), ]]
 
     ["Team Check Toggle"] = Tabs.Aim:Toggle({
         Text = "TeamCheck",
@@ -85,13 +101,25 @@ local AimTab = {
         Min = 0,
         Max = 1,
         Default = 0,
+        decimals = true,
         Callback = function(v)
             AimbotSettings.Smoothness = v
         end
     }),
 
+    ["SEPERATOR11"] = Tabs.Aim:Label({
+        Text = "--------------------------------------------"
+    }),
+
+    ["Fov enabled Toggle"] = Tabs.Aim:Toggle({
+        Text = "FOV Enabled",
+        Callback = function(v)
+            FovSettings.Enabled = v
+        end
+    }),
+
     ["Fov Toggle"] = Tabs.Aim:Toggle({
-        Text = "FOV",
+        Text = "FOV Visible",
         Callback = function(v)
             FovSettings.Visible = v
         end
@@ -105,7 +133,7 @@ local AimTab = {
         Callback = function(v)
             FovSettings.Size = v
         end
-    })
+    }),
 }
 
 local VisualsTab = {
@@ -167,27 +195,21 @@ local PlayerTab = {
     })
 }
 
-UserInputService.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 and AimbotSettings.Enabled == true then
-        Holding = true
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 and AimbotSettings.Enabled == true then
-        Holding = false
-    end
-end)
+local ConfigTab = {
+    ["SoonLabel"] = Tabs.Config:Label({
+        Text = "Soon...",
+        Weight = Enum.FontWeight.Heavy
+    })
+}
 
 local fov = Drawing.new("Circle")
 fov.Transparency = 1
 fov.Filled = false
 fov.Color = FovSettings.Color
-fov.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
 
 local function GetClosestPlayer()
     local MaxDistance
-    if FovSettings.Visible == true then 
+    if FovSettings.Enabled == true then 
         MaxDistance = FovSettings.Size
     else
         MaxDistance = math.huge
@@ -195,20 +217,22 @@ local function GetClosestPlayer()
             wait(20); MaxDistance = math.huge
   	    end)()
     end
-    local Target
 
     for i,v in pairs(game.Players:GetPlayers()) do
-        if v ~= Player then
+        if v ~= Player and Target == nil then
             if AimbotSettings.TeamCheck == true then
                 if v.Team ~= Player.Team then
                     if v.Character ~= nil then
                         if v.Character:FindFirstChild("HumanoidRootPart") ~= nil then
-                            if v.Character:FindFirstChild("Humanoid") ~= nil and v.Character:FindFirstChild("Humanoid").Health ~= 0 then
+                            if v.Character:FindFirstChild("Humanoid") ~= nil and v.Character:FindFirstChild("Humanoid").Health > 0 then
                                 local ScreenPoint, OnScreen = Camera:WorldToViewportPoint(v.Character:WaitForChild("HumanoidRootPart", math.huge).Position)
                                 local VectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(ScreenPoint.X, ScreenPoint.Y)).Magnitude
-                                
+
                                 if VectorDistance < MaxDistance and OnScreen == true then
                                     Target = v
+                                    if AimbotSettings.Aimpart == "Closest" then
+                                        --AimbotSettings.Aimpart = GetClosestBodyPart(v)
+                                    end
                                 end
                             end
                         end
@@ -223,6 +247,9 @@ local function GetClosestPlayer()
 							
 							if VectorDistance < MaxDistance and OnScreen == true then
 								Target = v
+                                if AimbotSettings.Aimpart == "Closest" then
+                                    --AimbotSettings.Aimpart = GetClosestBodyPart(v)
+                                end
 							end
 						end
 					end
@@ -234,15 +261,42 @@ local function GetClosestPlayer()
     return Target
 end
 
+UserInputService.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 and AimbotSettings.Enabled == true then
+        Holding = true
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 and AimbotSettings.Enabled == true then
+        Holding = false
+        Target = nil
+    end
+end)
+
+fov.Visible = false
+
 coroutine.wrap(function()
     RunService.RenderStepped:Connect(function()
-        fov.Visible = FovSettings.Visible
+        fov.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+        if FovSettings.Enabled == true then
+            fov.Visible = FovSettings.Visible
+        else
+            FovSettings.Visible = false
+            fov.Visible = false
+        end
         fov.Radius = FovSettings.Size
         if Holding == true and AimbotSettings.Enabled == true then
             if AimbotSettings.Smoothness > 0 then
-                TweenService:Create(Camera, TweenInfo.new(AimbotSettings.Smoothness, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {CFrame = CFrame.new(Camera.CFrame.Position, GetClosestPlayer().Character[AimbotSettings.Aimpart].Position)}):Play()
+                local closestPlayer = GetClosestPlayer()
+                if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil then
+                    Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, closestPlayer.Character[AimbotSettings.Aimpart].Position), AimbotSettings.Smoothness)
+                end
             else
-                Camera.CFrame = CFrame.new(Camera.CFrame.Position, GetClosestPlayer().Character[AimbotSettings.Aimpart].Position)
+                local closestPlayer = GetClosestPlayer()
+                if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil then
+                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, closestPlayer.Character[AimbotSettings.Aimpart].Position)
+                end
             end
         end
     end)
