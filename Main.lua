@@ -1,17 +1,42 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Farls-Xavier/UiLibrary/main/Library.lua"))()
 
---if isfolder("@FarlsXavier\\Universal") == false then
-    --makefolder("@FarlsXavier\\Universal")
---end
---if isfile("@FarlsXavier\\Universal\\Config.ini") == false then
-    --writefile("@FarlsXavier\\Universal\\Config.ini", [[
-       --{"Name": "Universal Script(Gay version)"}
-    --]])
---end
-
-local Target = nil
+local HttpService = game:GetService("HttpService")
 
 local FlushableTable = {}
+
+--if not isfolder("@FarlsXavier") then
+    --Library:destroy()
+    --error("Root folder '@FarlsXavier' does not exist.")
+    --return
+--else
+    --if not isfolder("@FarlsXavier\\Universal") then
+        --warn("Config folder '@FarlsXavier\\Universal' doesn't exist. Creating folder.")
+        --makefolder("@FarlsXavier\\Universal")
+        --writefile("@FarlsXavier\\Universal\\Config.ini", [[
+         --   {"Name": "Universal Script"}
+        --]])
+    --else
+        --if not isfile("@FarlsXavier\\Universal\\Config.ini") then
+            --warn("Config file '@FarlsXavier\\Universal\\Config.ini' doesn't exist. Creating file.")
+            --writefile("@FarlsXavier\\Universal\\Config.ini", [[
+                --{"Name": "Universal Script"}
+            --]])
+        --else
+           --print("Finished Startup")
+        --end
+    --end
+--end
+
+--local JSONDecode = HttpService:JSONDecode(readfile("@FarlsXavier\\Universal\\Config.ini"))
+
+local Window = Library:Window({
+    Title = --[[JSONDecode.Name]] "Universal Script",
+    OnClose = function()
+        Library:FlushTable(FlushableTable, {Disconnect = true, RemoveDrawings = true})
+    end
+})
+
+local Target = nil
 
 local Player = game.Players.LocalPlayer
 local Char = Player.Character or Player.CharacterAdded:Wait()
@@ -20,10 +45,7 @@ local Mouse = Player:GetMouse()
 local Camera = workspace.CurrentCamera
 
 local UserInputService = game:GetService("UserInputService")
-local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
-
---local JSONDecode = HttpService:JSONDecode(readfile("@FarlsXavier\\Universal\\Config.ini"))
 
 --[[ ESP SETTINGS ]]--
 local EspSettings = {
@@ -63,18 +85,6 @@ local FovSettings = {
     Color = Color3.fromRGB(126, 161, 255),
     Size = 90
 }
-
-local Window = Library:Window({
-    Title = --[[JSONDecode.Name]] "Universal Script",
-    OnClose = function()
-        for _,v in pairs(FlushableTable) do
-            v:Remove()
-            pcall(function()
-                v:Disconnect()
-            end)
-        end
-    end
-})
 
 local Tabs = {
     ["Aim"] = Window:Tab({
@@ -312,25 +322,22 @@ coroutine.wrap(function()
         fov.Radius = FovSettings.Size
         if Holding == true and AimbotSettings.Enabled == true then
             if AimbotSettings.Smoothness > 0 then
-                local closestPlayer = GetClosestPlayer()
+                GetClosestPlayer()
 
-                local part1, part2 = closestPlayer.Character:FindFirstChild("HumanoidRootPart"), Player.Character:FindFirstChild("HumanoidRootPart")
+                local part1, part2 = Target.Character:FindFirstChild("HumanoidRootPart"), Player.Character:FindFirstChild("HumanoidRootPart")
                 local Distance = (part1.Position - part2.Position).Magnitude
 
-                if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil and Distance < 1000 then
-                    Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, closestPlayer.Character[AimbotSettings.Aimpart].Position), AimbotSettings.Smoothness)
+                if Target and Target.Character and Target.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil and Target.Character.Humanoid.Health > 0 then
+                    Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, Target.Character[AimbotSettings.Aimpart].Position), AimbotSettings.Smoothness)
                 end
             else
-                local closestPlayer = GetClosestPlayer()
+                GetClosestPlayer()
 
-                local part1, part2 = closestPlayer.Character:FindFirstChild("HumanoidRootPart"), Player.Character:FindFirstChild("HumanoidRootPart")
+                local part1, part2 = Target.Character:FindFirstChild("HumanoidRootPart"), Player.Character:FindFirstChild("HumanoidRootPart")
                 local Distance = (part1.Position - part2.Position).Magnitude
 
-                if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil then
-                    if Distance > 1000 then
-                        closestPlayer = nil
-                    end
-                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, closestPlayer.Character[AimbotSettings.Aimpart].Position)
+                if Target ~= nil and Target.Character and Target.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil and Target.Character.Humanoid.Health > 0 then
+                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, Target.Character[AimbotSettings.Aimpart].Position)
                 end
             end
         end
@@ -503,4 +510,4 @@ game.Players.PlayerAdded:Connect(function(player)
     AddName(player)
 end)
 
-warn("This is version: 1.0.3 of the universal script")
+warn("This is version: 1.0.1 of the universal script")
