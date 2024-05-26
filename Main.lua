@@ -1,6 +1,7 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Farls-Xavier/UiLibrary/main/Library.lua"))()
 
 local HttpService = game:GetService("HttpService")
+local CanRunRestOfScript = true
 
 local FlushableTable = {}
 
@@ -32,7 +33,12 @@ local FlushableTable = {}
 local Window = Library:Window({
     Title = --[[JSONDecode.Name]] "Universal Script",
     OnClose = function()
-        Library:FlushTable(FlushableTable, {Disconnect = true, RemoveDrawings = true})
+        for i,v in pairs(FlushableTable) do
+            pcall(function()
+                v:Remove()
+                CanRunRestOfScript = false
+            end)
+        end
     end
 })
 
@@ -241,6 +247,8 @@ fov.Transparency = 1
 fov.Filled = false
 fov.Color = FovSettings.Color
 
+table.insert(FlushableTable, fov)
+
 local function GetClosestPlayer()
     local MaxDistance
     if FovSettings.Enabled == true then 
@@ -311,7 +319,9 @@ end)
 fov.Visible = false
 
 coroutine.wrap(function()
-    RunService.RenderStepped:Connect(function()
+    local CurrentStep
+
+    CurrentStep = RunService.RenderStepped:Connect(function()
         fov.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
         if FovSettings.Enabled == true then
             fov.Visible = FovSettings.Visible
@@ -320,7 +330,7 @@ coroutine.wrap(function()
             fov.Visible = false
         end
         fov.Radius = FovSettings.Size
-        if Holding == true and AimbotSettings.Enabled == true then
+        if Holding == true and AimbotSettings.Enabled == true and CanRunRestOfScript == true then
             if AimbotSettings.Smoothness > 0 then
                 GetClosestPlayer()
 
