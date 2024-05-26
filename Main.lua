@@ -228,7 +228,10 @@ local function GetClosestPlayer()
                                 local ScreenPoint, OnScreen = Camera:WorldToViewportPoint(v.Character:WaitForChild("HumanoidRootPart", math.huge).Position)
                                 local VectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(ScreenPoint.X, ScreenPoint.Y)).Magnitude
 
-                                if VectorDistance < MaxDistance and OnScreen == true then
+                                local part1, part2 = v.Character:FindFirstChild("HumanoidRootPart"), Player.Character:FindFirstChild("HumanoidRootPart")
+                                local Distance = (part1.Postion - part2.Position).Magnitude
+
+                                if VectorDistance < MaxDistance and OnScreen == true and not Distance >= 1000 then
                                     Target = v
                                     if AimbotSettings.Aimpart == "Closest" then
                                         --AimbotSettings.Aimpart = GetClosestBodyPart(v)
@@ -245,7 +248,10 @@ local function GetClosestPlayer()
 							local ScreenPoint, OnScreen = Camera:WorldToViewportPoint(v.Character:WaitForChild("HumanoidRootPart", math.huge).Position)
 							local VectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(ScreenPoint.X, ScreenPoint.Y)).Magnitude
 							
-							if VectorDistance < MaxDistance and OnScreen == true then
+                            local part1, part2 = v.Character:FindFirstChild("HumanoidRootPart"), Player.Character:FindFirstChild("HumanoidRootPart")
+                            local Distance = (part1.Postion - part2.Position).Magnitude
+
+							if VectorDistance < MaxDistance and OnScreen == true and not Distance >= 1000 then
 								Target = v
                                 if AimbotSettings.Aimpart == "Closest" then
                                     --AimbotSettings.Aimpart = GetClosestBodyPart(v)
