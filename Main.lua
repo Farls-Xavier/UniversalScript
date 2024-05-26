@@ -229,7 +229,7 @@ local function GetClosestPlayer()
                                 local VectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(ScreenPoint.X, ScreenPoint.Y)).Magnitude
 
                                 local part1, part2 = v.Character:FindFirstChild("HumanoidRootPart"), Player.Character:FindFirstChild("HumanoidRootPart")
-                                local Distance = (part1.Postion - part2.Position).Magnitude
+                                local Distance = (part1.Position - part2.Position).Magnitude
 
                                 if VectorDistance < MaxDistance and OnScreen == true and not Distance >= 1000 then
                                     Target = v
@@ -249,7 +249,7 @@ local function GetClosestPlayer()
 							local VectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(ScreenPoint.X, ScreenPoint.Y)).Magnitude
 							
                             local part1, part2 = v.Character:FindFirstChild("HumanoidRootPart"), Player.Character:FindFirstChild("HumanoidRootPart")
-                            local Distance = (part1.Postion - part2.Position).Magnitude
+                            local Distance = (part1.Position - part2.Position).Magnitude
 
 							if VectorDistance < MaxDistance and OnScreen == true and not Distance >= 1000 then
 								Target = v
@@ -464,3 +464,5 @@ game.Players.PlayerAdded:Connect(function(player)
     AddTracer(player)
     AddName(player)
 end)
+
+warn("This is version: 1.0.0 of the universal script")
