@@ -228,10 +228,7 @@ local function GetClosestPlayer()
                                 local ScreenPoint, OnScreen = Camera:WorldToViewportPoint(v.Character:WaitForChild("HumanoidRootPart", math.huge).Position)
                                 local VectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(ScreenPoint.X, ScreenPoint.Y)).Magnitude
 
-                                local part1, part2 = v.Character:FindFirstChild("HumanoidRootPart"), Player.Character:FindFirstChild("HumanoidRootPart")
-                                local Distance = (part1.Position - part2.Position).Magnitude
-
-                                if VectorDistance < MaxDistance and OnScreen == true and Distance < 1000 then
+                                if VectorDistance < MaxDistance and OnScreen == true then
                                     Target = v
                                     if AimbotSettings.Aimpart == "Closest" then
                                         --AimbotSettings.Aimpart = GetClosestBodyPart(v)
@@ -247,11 +244,8 @@ local function GetClosestPlayer()
 						if v.Character:FindFirstChild("Humanoid") ~= nil and v.Character:FindFirstChild("Humanoid").Health ~= 0 then
 							local ScreenPoint, OnScreen = Camera:WorldToViewportPoint(v.Character:WaitForChild("HumanoidRootPart", math.huge).Position)
 							local VectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(ScreenPoint.X, ScreenPoint.Y)).Magnitude
-							
-                            local part1, part2 = v.Character:FindFirstChild("HumanoidRootPart"), Player.Character:FindFirstChild("HumanoidRootPart")
-                            local Distance = (part1.Position - part2.Position).Magnitude
 
-							if VectorDistance < MaxDistance and OnScreen == true and Distance < 1000 then
+							if VectorDistance < MaxDistance and OnScreen == true then
 								Target = v
                                 if AimbotSettings.Aimpart == "Closest" then
                                     --AimbotSettings.Aimpart = GetClosestBodyPart(v)
@@ -295,12 +289,20 @@ coroutine.wrap(function()
         if Holding == true and AimbotSettings.Enabled == true then
             if AimbotSettings.Smoothness > 0 then
                 local closestPlayer = GetClosestPlayer()
-                if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil then
+
+                local part1, part2 = closestPlayer.Character:FindFirstChild("HumanoidRootPart"), Player.Character:FindFirstChild("HumanoidRootPart")
+                local Distance = (part1.Position - part2.Position).Magnitude
+
+                if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil and Distance < 1000 then
                     Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, closestPlayer.Character[AimbotSettings.Aimpart].Position), AimbotSettings.Smoothness)
                 end
             else
                 local closestPlayer = GetClosestPlayer()
-                if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil then
+
+                local part1, part2 = closestPlayer.Character:FindFirstChild("HumanoidRootPart"), Player.Character:FindFirstChild("HumanoidRootPart")
+                local Distance = (part1.Position - part2.Position).Magnitude
+
+                if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil and Distance < 1000 then
                     Camera.CFrame = CFrame.new(Camera.CFrame.Position, closestPlayer.Character[AimbotSettings.Aimpart].Position)
                 end
             end
@@ -465,4 +467,4 @@ game.Players.PlayerAdded:Connect(function(player)
     AddName(player)
 end)
 
-warn("This is version: 1.0.0 of the universal script")
+warn("This is version: 1.0.1 of the universal script")
