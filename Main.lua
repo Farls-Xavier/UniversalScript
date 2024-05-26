@@ -231,7 +231,7 @@ local function GetClosestPlayer()
                                 local part1, part2 = v.Character:FindFirstChild("HumanoidRootPart"), Player.Character:FindFirstChild("HumanoidRootPart")
                                 local Distance = (part1.Position - part2.Position).Magnitude
 
-                                if VectorDistance < MaxDistance and OnScreen == true and not Distance >= 1000 then
+                                if VectorDistance < MaxDistance and OnScreen == true and Distance < 1000 then
                                     Target = v
                                     if AimbotSettings.Aimpart == "Closest" then
                                         --AimbotSettings.Aimpart = GetClosestBodyPart(v)
@@ -251,7 +251,7 @@ local function GetClosestPlayer()
                             local part1, part2 = v.Character:FindFirstChild("HumanoidRootPart"), Player.Character:FindFirstChild("HumanoidRootPart")
                             local Distance = (part1.Position - part2.Position).Magnitude
 
-							if VectorDistance < MaxDistance and OnScreen == true and not Distance >= 1000 then
+							if VectorDistance < MaxDistance and OnScreen == true and Distance < 1000 then
 								Target = v
                                 if AimbotSettings.Aimpart == "Closest" then
                                     --AimbotSettings.Aimpart = GetClosestBodyPart(v)
