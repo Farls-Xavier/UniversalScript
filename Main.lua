@@ -1,6 +1,17 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Farls-Xavier/UiLibrary/main/Library.lua"))()
 
+--if isfolder("@FarlsXavier\\Universal") == false then
+    --makefolder("@FarlsXavier\\Universal")
+--end
+--if isfile("@FarlsXavier\\Universal\\Config.ini") == false then
+    --writefile("@FarlsXavier\\Universal\\Config.ini", [[
+       --{"Name": "Universal Script(Gay version)"}
+    --]])
+--end
+
 local Target = nil
+
+local FlushableTable = {}
 
 local Player = game.Players.LocalPlayer
 local Char = Player.Character or Player.CharacterAdded:Wait()
@@ -9,8 +20,10 @@ local Mouse = Player:GetMouse()
 local Camera = workspace.CurrentCamera
 
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
+
+--local JSONDecode = HttpService:JSONDecode(readfile("@FarlsXavier\\Universal\\Config.ini"))
 
 --[[ ESP SETTINGS ]]--
 local EspSettings = {
@@ -51,7 +64,18 @@ local FovSettings = {
     Size = 90
 }
 
-local Window = Library:Window({Title = "Universal Script"})
+local Window = Library:Window({
+    Title = --[[JSONDecode.Name]] "Universal Script",
+    OnClose = function()
+        for _,v in pairs(FlushableTable) do
+            v:Remove()
+            pcall(function()
+                v:Disconnect()
+            end)
+        end
+    end
+})
+
 local Tabs = {
     ["Aim"] = Window:Tab({
         Text = "Aim",
@@ -302,7 +326,10 @@ coroutine.wrap(function()
                 local part1, part2 = closestPlayer.Character:FindFirstChild("HumanoidRootPart"), Player.Character:FindFirstChild("HumanoidRootPart")
                 local Distance = (part1.Position - part2.Position).Magnitude
 
-                if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil and Distance < 1000 then
+                if closestPlayer and closestPlayer.Character and closestPlayer.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil then
+                    if Distance > 1000 then
+                        closestPlayer = nil
+                    end
                     Camera.CFrame = CFrame.new(Camera.CFrame.Position, closestPlayer.Character[AimbotSettings.Aimpart].Position)
                 end
             end
@@ -318,6 +345,9 @@ local function AddBoxes(player)
     Box.Color = BoxSettings.Color
     Box.Thickness = 2
     Box.Filled = false
+
+    table.insert(FlushableTable, Box)
+    table.insert(FlushableTable, CurrentStep)
 
     local HeadOffset = Vector3.new(0, 0.5, 0)
     local LegOffset = Vector3.new(0, 3, 0)
@@ -367,6 +397,9 @@ local function AddTracer(player)
     Tracer.Color = TracerSettings.Color
     Tracer.Thickness = 1
     Tracer.Transparency = 1
+
+    table.insert(FlushableTable, Tracer)
+    table.insert(FlushableTable, CurrentStep)
 
     CurrentStep = RunService.RenderStepped:Connect(function()
         if player.Character ~= nil and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
@@ -420,6 +453,9 @@ local function AddName(player)
     Text.OutlineColor = Color3.fromRGB(0,0,0)
     Text.Text = player.DisplayName
 
+    table.insert(FlushableTable, Text)
+    table.insert(FlushableTable, CurrentStep)
+
     CurrentStep = RunService.RenderStepped:Connect(function()
         if player.Character ~= nil and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
             local Vector, OnScreen = Camera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
@@ -467,4 +503,4 @@ game.Players.PlayerAdded:Connect(function(player)
     AddName(player)
 end)
 
-warn("This is version: 1.0.1 of the universal script")
+warn("This is version: 1.0.3 of the universal script")
