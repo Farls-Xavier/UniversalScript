@@ -122,12 +122,12 @@ local AimTab = {
         end
     }),
 
-    --[[ ["Wall Check Toggle"] = Tabs.Aim:Toggle({
+    ["Wall Check Toggle"] = Tabs.Aim:Toggle({
         Text = "WallCheck",
         Callback = function(v)
             AimbotSettings.WallCheck = v
         end
-    }), ]]
+    }), 
 
     ["Team Check Toggle"] = Tabs.Aim:Toggle({
         Text = "TeamCheck",
@@ -242,6 +242,13 @@ local ConfigTab = {
     })
 }
 
+function NotObstructing(Destination, Ignore)
+    local Origin = Camera.CFrame.Position
+    local CheckRay = Ray.new(Origin, Destination - Origin)
+    local Hit = workspace:FindPartOnRayWithIgnoreList(CheckRay, Ignore)
+    return Hit == nil
+end
+
 local fov = Drawing.new("Circle")
 fov.Transparency = 1
 fov.Filled = false
@@ -271,10 +278,13 @@ local function GetClosestPlayer()
                                 local VectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(ScreenPoint.X, ScreenPoint.Y)).Magnitude
 
                                 if VectorDistance < MaxDistance and OnScreen == true then
-                                    Target = v
-                                    if AimbotSettings.Aimpart == "Closest" then
-                                        --AimbotSettings.Aimpart = GetClosestBodyPart(v)
-                                    end
+                                    if AimbotSettings.WallCheck == true then
+                                        if NotObstructing(v.Character[AimbotSettings.Aimpart].Position, {Player.Character, v.Character}) then
+                                            Target = v
+                                        end
+                                    else
+                                        Target = v
+                                    end 
                                 end
                             end
                         end
@@ -288,9 +298,12 @@ local function GetClosestPlayer()
 							local VectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(ScreenPoint.X, ScreenPoint.Y)).Magnitude
 
 							if VectorDistance < MaxDistance and OnScreen == true then
-								Target = v
-                                if AimbotSettings.Aimpart == "Closest" then
-                                    --AimbotSettings.Aimpart = GetClosestBodyPart(v)
+                                if AimbotSettings.WallCheck == true then
+                                    if NotObstructing(v.Character[AimbotSettings.Aimpart].Position, {Player.Character, v.Character}) then
+                                        Target = v
+                                    end
+                                else
+                                    Target = v
                                 end
 							end
 						end
@@ -334,20 +347,14 @@ coroutine.wrap(function()
             if AimbotSettings.Smoothness > 0 then
                 GetClosestPlayer()
 
-                local part1, part2 = Target.Character:FindFirstChild("HumanoidRootPart"), Player.Character:FindFirstChild("HumanoidRootPart")
-                local Distance = (part1.Position - part2.Position).Magnitude
-
                 if Target and Target.Character and Target.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil and Target.Character.Humanoid.Health > 0 then
                     Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, Target.Character[AimbotSettings.Aimpart].Position), AimbotSettings.Smoothness)
                 end
             else
                 GetClosestPlayer()
 
-                local part1, part2 = Target.Character:FindFirstChild("HumanoidRootPart"), Player.Character:FindFirstChild("HumanoidRootPart")
-                local Distance = (part1.Position - part2.Position).Magnitude
-
                 if Target ~= nil and Target.Character and Target.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil and Target.Character.Humanoid.Health > 0 then
-                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, Target.Character[AimbotSettings.Aimpart].Position)
+                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, Target.Character[AimbotSettings.Aimpart].Position) 
                 end
             end
         end
