@@ -5,33 +5,33 @@ local CanRunRestOfScript = true
 
 local FlushableTable = {}
 
---if not isfolder("@FarlsXavier") then
-    --Library:destroy()
-    --error("Root folder '@FarlsXavier' does not exist.")
-    --return
---else
-    --if not isfolder("@FarlsXavier\\Universal") then
-        --warn("Config folder '@FarlsXavier\\Universal' doesn't exist. Creating folder.")
-        --makefolder("@FarlsXavier\\Universal")
-        --writefile("@FarlsXavier\\Universal\\Config.ini", [[
-         --   {"Name": "Universal Script"}
-        --]])
-    --else
-        --if not isfile("@FarlsXavier\\Universal\\Config.ini") then
-            --warn("Config file '@FarlsXavier\\Universal\\Config.ini' doesn't exist. Creating file.")
-            --writefile("@FarlsXavier\\Universal\\Config.ini", [[
-                --{"Name": "Universal Script"}
-            --]])
-        --else
-           --print("Finished Startup")
-        --end
-    --end
---end
+if not isfolder("@FarlsXavier") then
+    Library:destroy()
+    error("Root folder '@FarlsXavier' does not exist.")
+    return
+else
+    if not isfolder("@FarlsXavier\\Universal") then
+        warn("Config folder '@FarlsXavier\\Universal' doesn't exist. Creating folder.")
+        makefolder("@FarlsXavier\\Universal")
+        writefile("@FarlsXavier\\Universal\\Config.ini", [[
+            {"Name": "Universal Script"}
+        ]])
+    else
+        if not isfile("@FarlsXavier\\Universal\\Config.ini") then
+            warn("Config file '@FarlsXavier\\Universal\\Config.ini' doesn't exist. Creating file.")
+            writefile("@FarlsXavier\\Universal\\Config.ini", [[
+                {"Name": "Universal Script"}
+            ]])
+        else
+           print("Finished Startup")
+        end
+    end
+end
 
---local JSONDecode = HttpService:JSONDecode(readfile("@FarlsXavier\\Universal\\Config.ini"))
+local JSONDecode = HttpService:JSONDecode(readfile("@FarlsXavier\\Universal\\Config.ini"))
 
 local Window = Library:Window({
-    Title = --[[JSONDecode.Name]] "Universal Script",
+    Title = JSONDecode.Name --[["Universal Script"]],
     OnClose = function()
         for i,v in pairs(FlushableTable) do
             pcall(function()
