@@ -350,13 +350,13 @@ coroutine.wrap(function()
             if AimbotSettings.Smoothness > 0 then
                 GetClosestPlayer()
 
-                if Target and Target.Character and Target.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil and Target.Character.Humanoid.Health > 0 then
+                if Target and Target.Character and Target.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil and Target.Character.Humanoid.Health > 0 and NotObstructing(Target.Character[AimbotSettings.Aimpart].Position, {Player.Character, Target.Character}) then
                     Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, Target.Character[AimbotSettings.Aimpart].Position), AimbotSettings.Smoothness)
                 end
             else
                 GetClosestPlayer()
 
-                if Target ~= nil and Target.Character and Target.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil and Target.Character.Humanoid.Health > 0 then
+                if Target ~= nil and Target.Character and Target.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil and Target.Character.Humanoid.Health > 0 and NotObstructing(Target.Character[AimbotSettings.Aimpart].Position, {Player.Character, Target.Character}) then
                     Camera.CFrame = CFrame.new(Camera.CFrame.Position, Target.Character[AimbotSettings.Aimpart].Position) 
                 end
             end
@@ -530,4 +530,4 @@ game.Players.PlayerAdded:Connect(function(player)
     AddName(player)
 end)
 
-warn("This is version: 1.6.1 of the universal script")
+warn("This is version: 1.0.1 of the universal script")
