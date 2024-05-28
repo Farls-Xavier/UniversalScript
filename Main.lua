@@ -13,9 +13,12 @@ else
         warn("Config folder '@FarlsXavier\\Universal' doesn't exist. Creating folder.")
         makefolder("@FarlsXavier\\Universal")
         writefile("@FarlsXavier\\Universal\\Config.ini", [[
-            {"Name": "Universal Script"}
+            {
+                "Name": "Universal Script"
+            }
         ]])
     else
+        writefile("@FarlsXavier\\Universal\\README.txt", "ESP COLOR AND FOV COLOR SOON TOO LAZY")
         if not isfile("@FarlsXavier\\Universal\\Config.ini") then
             warn("Config file '@FarlsXavier\\Universal\\Config.ini' doesn't exist. Creating file.")
             writefile("@FarlsXavier\\Universal\\Config.ini", [[
@@ -261,9 +264,9 @@ local function GetClosestPlayer()
     if FovSettings.Enabled == true then 
         MaxDistance = FovSettings.Size
     else
-        MaxDistance = math.huge
+        MaxDistance = 9999999
         coroutine.wrap(function()
-            wait(20); MaxDistance = math.huge
+            wait(20); MaxDistance = 9999999
   	    end)()
     end
 
@@ -527,4 +530,4 @@ game.Players.PlayerAdded:Connect(function(player)
     AddName(player)
 end)
 
-warn("This is version: 1.0.1 of the universal script")
+warn("This is version: 1.6.1 of the universal script")
