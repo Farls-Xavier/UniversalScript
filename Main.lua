@@ -77,6 +77,13 @@ local NameSettings = {
     Color = Color3.fromRGB(126, 161, 255)
 }
 
+local HighlightSettings = {
+    Visible = false,
+    OutlineColor = Color3.fromRGB(),
+    FillColor = Color3.fromRGB(),
+    Highlights = {}
+}
+
 --[[ AIMBOT SETTINGS ]] --
 local Holding = false
 
@@ -122,6 +129,13 @@ local AimTab = {
         Text = "Aimbot",
         Callback = function(v)
             AimbotSettings.Enabled = v
+        end
+    }),
+
+    ["Aimpart Dropdown"] = Tabs.Aim:Dropdown({
+        Text = "Aimpart",
+        Callback = function(v)
+            AimbotSettings.Aimpart = v
         end
     }),
 
@@ -187,6 +201,13 @@ local VisualsTab = {
         end
     }),
 
+    ["Highlight Toggle"] = Tabs.Visuals:Toggle({
+        Text = "Highlights",
+        Callback = function(v)
+            HighlightSettings.Visible = v
+        end
+    }),
+
     ["Names Toggle"] = Tabs.Visuals:Toggle({
         Text = "Names",
         Callback = function(v)
@@ -245,6 +266,9 @@ local ConfigTab = {
     })
 }
 
+AimTab["Aimpart Dropdown"]:Add("Head", "Head")
+AimTab["Aimpart Dropdown"]:Add("Torso", "Torso")
+
 function NotObstructing(Destination, Ignore)
     local Origin = Camera.CFrame.Position
     local CheckRay = Ray.new(Origin, Destination - Origin)
@@ -260,58 +284,28 @@ fov.Color = FovSettings.Color
 table.insert(FlushableTable, fov)
 
 local function GetClosestPlayer()
-    local MaxDistance
-    if FovSettings.Enabled == true then 
-        MaxDistance = FovSettings.Size
-    else
-        MaxDistance = 9999999
-        coroutine.wrap(function()
-            wait(20); MaxDistance = 9999999
-  	    end)()
-    end
+    local maxDistance = FovSettings.Enabled and FovSettings.Size or 9999999
+    local mouseLocation = UserInputService:GetMouseLocation()
+    local playerCharacter = Player.Character
+    local aimbotSettings = AimbotSettings
 
-    for i,v in pairs(game.Players:GetPlayers()) do
-        if v ~= Player and Target == nil then
-            if AimbotSettings.TeamCheck == true then
-                if v.Team ~= Player.Team then
-                    if v.Character ~= nil then
-                        if v.Character:FindFirstChild("HumanoidRootPart") ~= nil then
-                            if v.Character:FindFirstChild("Humanoid") ~= nil and v.Character:FindFirstChild("Humanoid").Health > 0 then
-                                local ScreenPoint, OnScreen = Camera:WorldToViewportPoint(v.Character:WaitForChild("HumanoidRootPart", math.huge).Position)
-                                local VectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(ScreenPoint.X, ScreenPoint.Y)).Magnitude
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= Player and (not aimbotSettings.TeamCheck or player.Team ~= Player.Team) then
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+                local humanoidRootPart = player.Character:WaitForChild("HumanoidRootPart")
+                local screenPoint, onScreen = Camera:WorldToViewportPoint(humanoidRootPart.Position)
+                local vectorDistance = (Vector2.new(mouseLocation.X, mouseLocation.Y) - Vector2.new(screenPoint.X, screenPoint.Y)).Magnitude
 
-                                if VectorDistance < MaxDistance and OnScreen == true then
-                                    if AimbotSettings.WallCheck == true then
-                                        if NotObstructing(v.Character[AimbotSettings.Aimpart].Position, {Player.Character, v.Character}) then
-                                            Target = v
-                                        end
-                                    else
-                                        Target = v
-                                    end 
-                                end
-                            end
+                if vectorDistance < maxDistance and onScreen then
+                    local aimPart = player.Character:FindFirstChild(aimbotSettings.Aimpart)
+                    if aimPart then
+                        local aimPartPosition = aimPart.Position
+                        if not aimbotSettings.WallCheck or NotObstructing(aimPartPosition, {playerCharacter, player.Character}) then
+                            Target = player
+                            maxDistance = vectorDistance
                         end
                     end
                 end
-            else
-                if v.Character ~= nil then
-					if v.Character:FindFirstChild("HumanoidRootPart") ~= nil then
-						if v.Character:FindFirstChild("Humanoid") ~= nil and v.Character:FindFirstChild("Humanoid").Health ~= 0 then
-							local ScreenPoint, OnScreen = Camera:WorldToViewportPoint(v.Character:WaitForChild("HumanoidRootPart", math.huge).Position)
-							local VectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(ScreenPoint.X, ScreenPoint.Y)).Magnitude
-
-							if VectorDistance < MaxDistance and OnScreen == true then
-                                if AimbotSettings.WallCheck == true then
-                                    if NotObstructing(v.Character[AimbotSettings.Aimpart].Position, {Player.Character, v.Character}) then
-                                        Target = v
-                                    end
-                                else
-                                    Target = v
-                                end
-							end
-						end
-					end
-				end
             end
         end
     end
@@ -516,11 +510,59 @@ local function AddName(player)
     end)
 end
 
+local function AddHighlight(player)
+    local CurrentStep
+
+    local CurrentHighlight = Instance.new("Highlight")
+    CurrentHighlight.Enabled = HighlightSettings.Visible
+    CurrentHighlight.Parent = player.Character
+    CurrentHighlight.Adornee = player.Character
+    CurrentHighlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    CurrentHighlight.FillColor = HighlightSettings.FillColor
+    CurrentHighlight.OutlineColor = HighlightSettings.OutlineColor
+    CurrentHighlight.Name = player.Name.."'s Highlight"
+
+    CurrentStep = RunService.RenderStepped:Connect(function()
+        if NotObstructing(player.Character.HumanoidRootPart.Position, {Player.Character, player.Character}) then
+            CurrentHighlight.FillColor = Color3.fromRGB(0, 255, 0)
+        else
+            CurrentHighlight.FillColor = Color3.fromRGB(255, 0, 0)
+        end
+
+        task.wait(.1)
+        CurrentHighlight.Enabled = HighlightSettings.Visible
+    end)
+
+    Player.CharacterAdded:Connect(function(character)
+        if character:FindFirstChild(player.Name.."'s Highlight") then
+            warn("Found highlight")
+        else
+            local CurrentHighlight = Instance.new("Highlight")
+            CurrentHighlight.Enabled = HighlightSettings.Visible
+            CurrentHighlight.Parent = player.Character
+            CurrentHighlight.Adornee = player.Character
+            CurrentHighlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            CurrentHighlight.FillColor = HighlightSettings.FillColor
+            CurrentHighlight.OutlineColor = HighlightSettings.OutlineColor
+            CurrentHighlight.Name = player.Name.."'s Highlight"
+        end
+    end)
+
+    game.Players.PlayerRemoving:Connect(function(plr)
+        if plr == player then
+            CurrentHighlight:Destroy()
+            CurrentStep:Disconnect()
+            CurrentStep = nil
+        end
+    end)
+end
+
 for i,v in pairs(game.Players:GetPlayers()) do
     if v ~= Player then
         AddBoxes(v)
         AddTracer(v)
         AddName(v)
+        AddHighlight(v)
     end
 end
 
@@ -528,6 +570,7 @@ game.Players.PlayerAdded:Connect(function(player)
     AddBoxes(player)
     AddTracer(player)
     AddName(player)
+    AddHighlight(player)
 end)
 
-warn("This is version: 1.0.1 of the universal script")
+warn("This is version: 1.2.0 of the universal script")
