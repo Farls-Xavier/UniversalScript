@@ -531,8 +531,11 @@ local function AddHighlight(player)
     CurrentHighlight.OutlineColor = HighlightSettings.OutlineColor
     CurrentHighlight.Name = player.Name.."'s Highlight"
 
+    table.insert(FlushableTable, CurrentHighlight)
+    table.insert(FlushableTable, CurrentStep)
+
     CurrentStep = RunService.RenderStepped:Connect(function()
-        if NotObstructing(player.Character.HumanoidRootPart.Position, {Player.Character, player.Character}) then
+        if NotObstructing(player.Character:WaitForChild("HumanoidRootPart", 10).Position, {Player.Character, player.Character}) then
             CurrentHighlight.FillColor = Color3.fromRGB(0, 255, 0)
         else
             CurrentHighlight.FillColor = Color3.fromRGB(255, 0, 0)
@@ -542,11 +545,11 @@ local function AddHighlight(player)
         CurrentHighlight.Enabled = HighlightSettings.Visible
     end)
 
-    Player.CharacterAdded:Connect(function(character)
+    player.CharacterAdded:Connect(function(character)
         if character:FindFirstChild(player.Name.."'s Highlight") then
             warn("Found highlight")
         else
-            local CurrentHighlight = Instance.new("Highlight")
+            CurrentHighlight = Instance.new("Highlight")
             CurrentHighlight.Enabled = HighlightSettings.Visible
             CurrentHighlight.Parent = player.Character
             CurrentHighlight.Adornee = player.Character
@@ -554,6 +557,22 @@ local function AddHighlight(player)
             CurrentHighlight.FillColor = HighlightSettings.FillColor
             CurrentHighlight.OutlineColor = HighlightSettings.OutlineColor
             CurrentHighlight.Name = player.Name.."'s Highlight"
+
+            CurrentStep:Disconnect()
+            print("Disconnected CurrentStep.")
+            CurrentStep = nil
+
+            print("Resetting CurrentStep.")
+            CurrentStep = RunService.RenderStepped:Connect(function()
+                if NotObstructing(player.Character:WaitForChild("HumanoidRootPart", 10).Position, {Player.Character, player.Character}) then
+                    CurrentHighlight.FillColor = Color3.fromRGB(0, 255, 0)
+                else
+                    CurrentHighlight.FillColor = Color3.fromRGB(255, 0, 0)
+                end
+        
+                task.wait(.1)
+                CurrentHighlight.Enabled = HighlightSettings.Visible
+            end)
         end
     end)
 
