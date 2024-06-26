@@ -53,6 +53,7 @@ local Mouse = Player:GetMouse()
 
 local Camera = workspace.CurrentCamera
 
+local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
@@ -249,12 +250,13 @@ local PlayerTab = {
         Text = "JumpPower",
         Min = 0,
         Max = 500,
-        Default = Char:WaitForChild("Humanoid", math.huge).JumpPower or Char:WaitForChild("Humanoid", math.huge).JumpHeight,
+        Default = game.StarterPlayer.CharacterUseJumpPower and Char:WaitForChild("Humanoid", math.huge).JumpPower or Char:WaitForChild("Humanoid", math.huge).JumpHeight,
         Callback = function(v)
-            Char:WaitForChild("Humanoid", math.huge).JumpPower = v
-            pcall(function()
+            if game.StarterPlayer.CharacterUseJumpPower then
+                Char:WaitForChild("Humanoid", math.huge).JumpPower = v
+            else
                 Char:WaitForChild("Humanoid", math.huge).JumpHeight = v
-            end)
+            end
         end
     })
 }
@@ -273,6 +275,7 @@ function NotObstructing(Destination, Ignore)
     local Origin = Camera.CFrame.Position
     local CheckRay = Ray.new(Origin, Destination - Origin)
     local Hit = workspace:FindPartOnRayWithIgnoreList(CheckRay, Ignore)
+
     return Hit == nil
 end
 
@@ -287,20 +290,19 @@ local function GetClosestPlayer()
     local maxDistance = FovSettings.Enabled and FovSettings.Size or 9999999
     local mouseLocation = UserInputService:GetMouseLocation()
     local playerCharacter = Player.Character
-    local aimbotSettings = AimbotSettings
 
     for _, player in pairs(game.Players:GetPlayers()) do
-        if player ~= Player and (not aimbotSettings.TeamCheck or player.Team ~= Player.Team) then
+        if player ~= Player and (not AimbotSettings.TeamCheck or player.Team ~= Player.Team) then
             if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
                 local humanoidRootPart = player.Character:WaitForChild("HumanoidRootPart")
                 local screenPoint, onScreen = Camera:WorldToViewportPoint(humanoidRootPart.Position)
                 local vectorDistance = (Vector2.new(mouseLocation.X, mouseLocation.Y) - Vector2.new(screenPoint.X, screenPoint.Y)).Magnitude
 
                 if vectorDistance < maxDistance and onScreen then
-                    local aimPart = player.Character:FindFirstChild(aimbotSettings.Aimpart)
+                    local aimPart = player.Character:FindFirstChild(AimbotSettings.Aimpart)
                     if aimPart then
                         local aimPartPosition = aimPart.Position
-                        if not aimbotSettings.WallCheck or NotObstructing(aimPartPosition, {playerCharacter, player.Character}) then
+                        if not AimbotSettings.WallCheck or NotObstructing(aimPartPosition, {playerCharacter, player.Character}) then
                             Target = player
                             maxDistance = vectorDistance
                         end
@@ -344,13 +346,13 @@ coroutine.wrap(function()
             if AimbotSettings.Smoothness > 0 then
                 GetClosestPlayer()
 
-                if Target and Target.Character and Target.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil and Target.Character.Humanoid.Health > 0 and NotObstructing(Target.Character[AimbotSettings.Aimpart].Position, {Player.Character, Target.Character}) then
+                if Target and Target.Character and Target.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil and Target.Character.Humanoid.Health > 0  then
                     Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, Target.Character[AimbotSettings.Aimpart].Position), AimbotSettings.Smoothness)
                 end
             else
                 GetClosestPlayer()
 
-                if Target ~= nil and Target.Character and Target.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil and Target.Character.Humanoid.Health > 0 and NotObstructing(Target.Character[AimbotSettings.Aimpart].Position, {Player.Character, Target.Character}) then
+                if Target ~= nil and Target.Character and Target.Character:FindFirstChild(AimbotSettings.Aimpart) ~= nil and Target.Character.Humanoid.Health > 0 then
                     Camera.CFrame = CFrame.new(Camera.CFrame.Position, Target.Character[AimbotSettings.Aimpart].Position) 
                 end
             end
@@ -399,6 +401,7 @@ local function AddBoxes(player)
         else
             Box.Visible = false
         end
+        task.wait(.1)
     end)
 
     game.Players.PlayerRemoving:Connect(function(plr)
@@ -451,6 +454,7 @@ local function AddTracer(player)
         else
             Tracer.Visible = false
         end
+        task.wait(.1)
     end)
 
     game.Players.PlayerRemoving:Connect(function(plr)
@@ -481,7 +485,11 @@ local function AddName(player)
         if player.Character ~= nil and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
             local Vector, OnScreen = Camera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
 
-            Text.Position = Vector2.new(Vector.X, Vector.Y - 25)
+            Text.Position = Vector2.new(Vector.X, Vector.Y - 15)
+
+            local Distance = (player.Character.HumanoidRootPart.Position - Player.Character.HumanoidRootPart.Position).Magnitude
+
+            Text.Text = player.DisplayName.."["..math.round(Distance).."]"
 
             if OnScreen == true then
                 if EspSettings.TeamCheck == true then
@@ -499,6 +507,7 @@ local function AddName(player)
         else
             Text.Visible = false
         end
+        task.wait(.1)
     end)
 
     game.Players.PlayerRemoving:Connect(function(plr)
@@ -573,4 +582,4 @@ game.Players.PlayerAdded:Connect(function(player)
     AddHighlight(player)
 end)
 
-warn("This is version: 1.2.0 of the universal script")
+warn("This is version: 1.2.2 of the universal script")
