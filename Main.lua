@@ -534,7 +534,7 @@ local function AddHighlight(player)
 
     table.insert(FlushableTable, CurrentStep)
     table.insert(FlushableTable, ThisHighlight)
-
+    
     CurrentStep = RunService.RenderStepped:Connect(function()
         if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             if NotObstructing(player.Character.HumanoidRootPart.Position, {Player.Character, player.Character}) then
@@ -546,11 +546,18 @@ local function AddHighlight(player)
             task.wait(.1)
             ThisHighlight.Enabled = HighlightSettings.Visible
         else
-            print("No character for:", player.Name)
-
-            repeat task.wait(.01) until player.Character
-            ThisHighlight.Adornee = player.Character
+            print("No character for:", player.Name)   
         end
+    end)
+
+    player.CharacterAdded:Connect(function(_char)
+        for _,v in pairs(_char:GetDescendants()) do
+            if v:IsA("Highlight") then
+                print(v.Name)
+                v:Destroy()
+            end
+        end
+        ThisHighlight.Adornee = player.Character
     end)
 
     game.Players.PlayerRemoving:Connect(function(plr)
@@ -581,4 +588,4 @@ game.Players.PlayerAdded:Connect(function(player)
     AddHighlight(player)
 end)
 
-warn("This is version: 1.2.3 of the universal script")
+warn("This is version: 1.2.4 of the universal script")
