@@ -57,6 +57,9 @@ local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
+local ThisFolder = Instance.new("Folder", game.Workspace)
+ThisFolder.Name = "UniversalFolderDump"
+
 --[[ ESP SETTINGS ]]--
 local EspSettings = {
     TeamCheck = false
@@ -520,67 +523,41 @@ local function AddName(player)
 end
 
 local function AddHighlight(player)
+    local ThisHighlight = Instance.new("Highlight")
+    ThisHighlight.Parent = ThisFolder
+    ThisHighlight.Adornee = player.Character
+    ThisHighlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    ThisHighlight.Enabled = HighlightSettings.Visible
+    ThisHighlight.Name = player.Name.."'s Highlight"
+
     local CurrentStep
 
-    local CurrentHighlight = Instance.new("Highlight")
-    CurrentHighlight.Enabled = HighlightSettings.Visible
-    CurrentHighlight.Parent = player.Character
-    CurrentHighlight.Adornee = player.Character
-    CurrentHighlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    CurrentHighlight.FillColor = HighlightSettings.FillColor
-    CurrentHighlight.OutlineColor = HighlightSettings.OutlineColor
-    CurrentHighlight.Name = player.Name.."'s Highlight"
-
-    table.insert(FlushableTable, CurrentHighlight)
     table.insert(FlushableTable, CurrentStep)
+    table.insert(FlushableTable, ThisHighlight)
 
     CurrentStep = RunService.RenderStepped:Connect(function()
-        if NotObstructing(player.Character:WaitForChild("HumanoidRootPart", 10).Position, {Player.Character, player.Character}) then
-            CurrentHighlight.FillColor = Color3.fromRGB(0, 255, 0)
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            if NotObstructing(player.Character.HumanoidRootPart.Position, {Player.Character, player.Character}) then
+                ThisHighlight.FillColor = Color3.fromRGB(0, 255, 0)
+            else
+                ThisHighlight.FillColor = Color3.fromRGB(255, 0, 0)
+            end
+    
+            task.wait(.1)
+            ThisHighlight.Enabled = HighlightSettings.Visible
         else
-            CurrentHighlight.FillColor = Color3.fromRGB(255, 0, 0)
-        end
+            print("No character for:", player.Name)
 
-        task.wait(.1)
-        CurrentHighlight.Enabled = HighlightSettings.Visible
-    end)
-
-    player.CharacterAdded:Connect(function(character)
-        if character:FindFirstChild(player.Name.."'s Highlight") then
-            warn("Found highlight")
-        else
-            CurrentHighlight = Instance.new("Highlight")
-            CurrentHighlight.Enabled = HighlightSettings.Visible
-            CurrentHighlight.Parent = player.Character
-            CurrentHighlight.Adornee = player.Character
-            CurrentHighlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-            CurrentHighlight.FillColor = HighlightSettings.FillColor
-            CurrentHighlight.OutlineColor = HighlightSettings.OutlineColor
-            CurrentHighlight.Name = player.Name.."'s Highlight"
-
-            CurrentStep:Disconnect()
-            print("Disconnected CurrentStep.")
-            CurrentStep = nil
-
-            print("Resetting CurrentStep.")
-            CurrentStep = RunService.RenderStepped:Connect(function()
-                if NotObstructing(player.Character:WaitForChild("HumanoidRootPart", 10).Position, {Player.Character, player.Character}) then
-                    CurrentHighlight.FillColor = Color3.fromRGB(0, 255, 0)
-                else
-                    CurrentHighlight.FillColor = Color3.fromRGB(255, 0, 0)
-                end
-        
-                task.wait(.1)
-                CurrentHighlight.Enabled = HighlightSettings.Visible
-            end)
+            repeat task.wait(.01) until player.Character
+            ThisHighlight.Adornee = player.Character
         end
     end)
 
     game.Players.PlayerRemoving:Connect(function(plr)
-        if plr == player then
-            CurrentHighlight:Destroy()
+        if player == plr then
             CurrentStep:Disconnect()
             CurrentStep = nil
+            ThisHighlight:Destroy()
         end
     end)
 end
@@ -591,6 +568,9 @@ for i,v in pairs(game.Players:GetPlayers()) do
         AddTracer(v)
         AddName(v)
         AddHighlight(v)
+        if not v.Character then
+            Window:Notification("Warning", "For "..v.DisplayName.." Highlight wont work", 5)
+        end
     end
 end
 
@@ -601,4 +581,4 @@ game.Players.PlayerAdded:Connect(function(player)
     AddHighlight(player)
 end)
 
-warn("This is version: 1.2.2 of the universal script")
+warn("This is version: 1.2.3 of the universal script")
