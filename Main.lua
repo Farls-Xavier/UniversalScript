@@ -588,8 +588,12 @@ game.Players.PlayerAdded:Connect(function(player)
     AddHighlight(player)
 end)
 
+Player.CharacterAdded:Connect(function(character)
+    Char = character
+end)
+
 RunService.RenderStepped:Connect(function()
     Char:FindFirstChildOfClass("Humanoid").WalkSpeed = LoopSpeed
 end)
 
-warn("This is version: 1.2.7 of the universal script")
+warn("This is version: 1.2.8 of the universal script")
