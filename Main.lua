@@ -47,6 +47,7 @@ local Window = Library:Window({
 
 local Target = nil
 
+local LoopSpeed = 0
 local Player = game.Players.LocalPlayer
 local Char = Player.Character or Player.CharacterAdded:Wait()
 local Mouse = Player:GetMouse()
@@ -245,11 +246,8 @@ local PlayerTab = {
         Max = 500,
         Default = Char:WaitForChild("Humanoid", math.huge).WalkSpeed,
         Callback = function(v)
-            coroutine.wrap(function()
-                while task.wait() do
-                    Char:WaitForChild("Humanoid", math.huge).WalkSpeed = v
-                end
-            end)()
+            Char:FindFirstChildOfClass("Humanoid").WalkSpeed = v
+            LoopSpeed = v
         end
     }),
     
@@ -590,4 +588,8 @@ game.Players.PlayerAdded:Connect(function(player)
     AddHighlight(player)
 end)
 
-warn("This is version: 1.2.6 of the universal script")
+RunService.RenderStepped:Connect(function()
+    Char:FindFirstChildOfClass("Humanoid").WalkSpeed = LoopSpeed
+end)
+
+warn("This is version: 1.2.7 of the universal script")
