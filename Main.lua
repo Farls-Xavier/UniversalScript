@@ -245,9 +245,11 @@ local PlayerTab = {
         Max = 500,
         Default = Char:WaitForChild("Humanoid", math.huge).WalkSpeed,
         Callback = function(v)
-            while task.wait() do
-                Char:WaitForChild("Humanoid", math.huge).WalkSpeed = v
-            end
+            coroutine.wrap(function()
+                while task.wait() do
+                    Char:WaitForChild("Humanoid", math.huge).WalkSpeed = v
+                end
+            end)()
         end
     }),
     
@@ -588,4 +590,4 @@ game.Players.PlayerAdded:Connect(function(player)
     AddHighlight(player)
 end)
 
-warn("This is version: 1.2.5 of the universal script")
+warn("This is version: 1.2.6 of the universal script")
