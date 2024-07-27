@@ -1,10 +1,3 @@
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Farls-Xavier/UiLibrary/main/Library.lua"))()
-
-local HttpService = game:GetService("HttpService")
-local CanRunRestOfScript = true
-
-local FlushableTable = {}
-
 if not isfolder("@FarlsXavier") then
     error("Root folder '@FarlsXavier' does not exist.")
     return
@@ -29,6 +22,13 @@ else
         end
     end
 end
+
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Farls-Xavier/UiLibrary/main/Library.lua"))()
+
+local HttpService = game:GetService("HttpService")
+local CanRunRestOfScript = true
+
+local FlushableTable = {}
 
 local JSONDecode = HttpService:JSONDecode(readfile("@FarlsXavier\\Universal\\Config.ini"))
 
@@ -83,8 +83,8 @@ local NameSettings = {
 
 local HighlightSettings = {
     Visible = false,
-    OutlineColor = Color3.fromRGB(),
-    FillColor = Color3.fromRGB(),
+    VisibleColor = Color3.fromRGB(0, 255, 0),
+    NonVisibleColor = Color3.fromRGB(255, 0, 0),
     Highlights = {}
 }
 
@@ -245,7 +245,9 @@ local PlayerTab = {
         Max = 500,
         Default = Char:WaitForChild("Humanoid", math.huge).WalkSpeed,
         Callback = function(v)
-            Char:WaitForChild("Humanoid", math.huge).WalkSpeed = v
+            while task.wait() do
+                Char:WaitForChild("Humanoid", math.huge).WalkSpeed = v
+            end
         end
     }),
     
@@ -360,6 +362,7 @@ coroutine.wrap(function()
                 end
             end
         end
+        task.wait(0)
     end)
 end)()
 
@@ -538,22 +541,19 @@ local function AddHighlight(player)
     CurrentStep = RunService.RenderStepped:Connect(function()
         if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             if NotObstructing(player.Character.HumanoidRootPart.Position, {Player.Character, player.Character}) then
-                ThisHighlight.FillColor = Color3.fromRGB(0, 255, 0)
+                ThisHighlight.FillColor = HighlightSettings.VisibleColor
             else
-                ThisHighlight.FillColor = Color3.fromRGB(255, 0, 0)
+                ThisHighlight.FillColor = HighlightSettings.NonVisibleColor
             end
-    
-            task.wait(.1)
+
             ThisHighlight.Enabled = HighlightSettings.Visible
-        else
-            print("No character for:", player.Name)   
+            task.wait(.1)
         end
     end)
 
     player.CharacterAdded:Connect(function(_char)
         for _,v in pairs(_char:GetDescendants()) do
             if v:IsA("Highlight") then
-                print(v.Name)
                 v:Destroy()
             end
         end
@@ -588,4 +588,4 @@ game.Players.PlayerAdded:Connect(function(player)
     AddHighlight(player)
 end)
 
-warn("This is version: 1.2.4 of the universal script")
+warn("This is version: 1.2.5 of the universal script")
